@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 void main() {
   runApp(MaterialApp(
@@ -14,6 +15,23 @@ class FirstScreen extends StatefulWidget {
 
 class _FirstScreenState extends State<FirstScreen> {
   var _nameFieldController = TextEditingController();
+
+  Future _gotoNextScreen(BuildContext context) async {
+    Map results = await Navigator.of(context).push(
+      MaterialPageRoute<Map>(
+          builder: (BuildContext context) {
+            return SecondScreen(name: _nameFieldController.text);
+          }
+      )
+    );
+
+    if (results != null && results.containsKey("info")){
+      print(results["info"]);
+      _nameFieldController = results["info"];
+    }else{
+      print("Nothing!");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +59,7 @@ class _FirstScreenState extends State<FirstScreen> {
           ListTile(
             title: RaisedButton(
               child: Text("Send me to the Second Screen"),
-              onPressed: () {
-                var router = MaterialPageRoute(
-                    builder: (BuildContext context) => SecondScreen(name: _nameFieldController.text,));
-                Navigator.of(context).push(router);
-              },
+              onPressed: () {_gotoNextScreen(context);}
             ),
           ),
         ],
@@ -56,7 +70,6 @@ class _FirstScreenState extends State<FirstScreen> {
 
 class SecondScreen extends StatefulWidget {
   final String name;
-
   SecondScreen({Key key, this.name}) : super(key: key);
 
   @override
@@ -64,6 +77,7 @@ class SecondScreen extends StatefulWidget {
 }
 
 class _SecondScreenState extends State<SecondScreen> {
+  var _backTextFieldController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -72,11 +86,36 @@ class _SecondScreenState extends State<SecondScreen> {
         backgroundColor: Colors.green,
         centerTitle: true,
       ),
-      body: ListTile(
-        title: Text(
-          "${widget.name}"
+      body: Container(
+        child: Column(
+          children: <Widget>[
+            ListTile(
+              title: Text(
+                  "${widget.name}"
+              ),
+            ),
+            ListTile(
+              title: TextField(
+                controller: _backTextFieldController,
+                decoration: InputDecoration(
+                  labelText: "Write anything!"
+                ),
+              ),
+            ),
+            ListTile(
+              title: FlatButton(
+                  onPressed: () {
+                    Navigator.pop(context, {
+                      'info': _backTextFieldController.text,
+                    });
+                  },
+                  child: Text(
+                    "Send back",
+                  )),
+            ),
+          ],
         ),
-      )
+      ),
     );
   }
 }
